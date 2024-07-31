@@ -12,8 +12,8 @@ from todolist.models import TodoItem
 
 # Classes are called like the models
 class TodoItemsView(APIView):
-    authentication_classes = [] # TokenAuthentication
-    permission_classes = [] # IsAuthenticated
+    authentication_classes = [TokenAuthentication] # TokenAuthentication
+    permission_classes = [IsAuthenticated] # IsAuthenticated
 
     def get(self, request, format=None):
         todos = TodoItem.objects.all()
