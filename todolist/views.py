@@ -12,11 +12,11 @@ from todolist.models import TodoItem
 
 # Classes are called like the models
 class TodoItemsView(APIView):
-    authentication_classes = [TokenAuthentication] # TokenAuthentication
-    permission_classes = [IsAuthenticated] # IsAuthenticated
+    authentication_classes = [TokenAuthentication] 
+    permission_classes = [] # IsAuthenticated
 
     def get(self, request, format=None):
-        todos = TodoItem.objects.all()
+        todos = TodoItem.objects.filter(author=request.user)
         serializer = TodoItemSerializer(todos, many=True)
         return Response(serializer.data)
     
