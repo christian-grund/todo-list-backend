@@ -3,7 +3,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import authentication, permissions
+from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from todolist.serializers import TodoItemSerializer
@@ -33,7 +33,19 @@ class LoginView(ObtainAuthToken):
             'user_id': user.pk,
             'email': user.email
         })
-    
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        try:
+            # Delete the token to force a login
+            request.user.auth_token.delete()
+            return Response(status=status.HTTP_200_OK)
+        except AttributeError:
+            # Handle case where token doesn't exist (e.g., already logged out)
+            return Response({"error": "No token found or already logged out"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
     
