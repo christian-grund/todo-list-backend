@@ -1,19 +1,21 @@
 from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from todolist.serializers import TodoItemSerializer
+from rest_framework.generics import CreateAPIView
+from todolist.serializers import TodoItemSerializer, UserSerializer
 from todolist.models import TodoItem
 # from django.contrib.auth.models import User
 
 # Classes are called like the models
 class TodoItemsView(APIView):
     authentication_classes = [TokenAuthentication] 
-    permission_classes = [] # IsAuthenticated
+    permission_classes = [IsAuthenticated] # IsAuthenticated
 
     def get(self, request, format=None):
         todos = TodoItem.objects.filter(author=request.user)
@@ -47,5 +49,11 @@ class LogoutView(APIView):
             return Response({"error": "No token found or already logged out"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class RegisterView(CreateAPIView):
+    model = get_user_model()
+    permission_classes = [
+        permissions.AllowAny # Or anon users can't register
+    ]
+    serializer_class = UserSerializer
 
     
