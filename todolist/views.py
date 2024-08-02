@@ -1,5 +1,3 @@
-from django.shortcuts import render
-from django.contrib.auth import get_user_model
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -8,8 +6,10 @@ from rest_framework import status, permissions
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import CreateAPIView
-from todolist.serializers import TodoItemSerializer, UserSerializer
+from todolist.serializers import TodoItemSerializer
 from todolist.models import TodoItem
+from .serializers import RegisterSerializer
+from rest_framework.permissions import AllowAny
 # from django.contrib.auth.models import User
 
 # Classes are called like the models
@@ -49,11 +49,17 @@ class LogoutView(APIView):
             return Response({"error": "No token found or already logged out"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RegisterView(CreateAPIView):
-    model = get_user_model()
-    permission_classes = [
-        permissions.AllowAny # Or anon users can't register
-    ]
-    serializer_class = UserSerializer
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
 
+    def post(self, request, *args, **kwargs):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'username': user.username
+        }, status=status.HTTP_201_CREATED)
     

@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from todolist.models import TodoItem
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 
-UserModel = get_user_model()
+
 
 class TodoItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,22 +13,16 @@ class TodoItemSerializer(serializers.ModelSerializer):
 
 
 
-
-
-class UserSerializer(serializers.ModelSerializer):
-
-    password = serializers.CharField(write_only=True)
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-
-        user = UserModel.objects.create_user(
+        user = User.objects.create_user(
             username=validated_data['username'],
-            password=validated_data['password'],
+            password=validated_data['password']
         )
-
+        Token.objects.create(user=user)
         return user
-
-    class Meta:
-        model = UserModel
-        # Tuple of serialized model fields (see link [2])
-        fields = ( "id", "username", "password", )
