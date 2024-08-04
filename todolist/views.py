@@ -2,7 +2,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status, permissions
+from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import CreateAPIView
@@ -14,8 +14,8 @@ from rest_framework.permissions import AllowAny
 
 # Classes are called like the models
 class TodoItemsView(APIView):
-    authentication_classes = [TokenAuthentication] 
-    permission_classes = [IsAuthenticated] # IsAuthenticated
+    authentication_classes = [TokenAuthentication] # 
+    permission_classes = [] # IsAuthenticated
 
     def get(self, request, format=None):
         todos = TodoItem.objects.filter(author=request.user)
@@ -36,6 +36,11 @@ class TodoItemsView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         print("Serializer errors:", serializer.errors)  # Debugging-Ausgabe
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class TodoDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = TodoItem.objects.all()
+    serializer_class = TodoItemSerializer
+    lookup_field = 'id'  # Definiert, dass die ID für das Lookup verwendet wird
     
 
 class LoginView(ObtainAuthToken):

@@ -8,7 +8,7 @@ from rest_framework.authtoken.models import Token
 class TodoItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = TodoItem
-        fields = ['title', 'created_at', 'checked']
+        fields = ['id', 'title', 'created_at', 'checked']
         read_only_fields = ['author']
 
 
