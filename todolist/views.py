@@ -22,6 +22,21 @@ class TodoItemsView(APIView):
         serializer = TodoItemSerializer(todos, many=True)
         return Response(serializer.data)
     
+    def post(self, request, format=None):
+        print("Request data:", request.data)  # Debugging-Ausgabe
+        # serializer = TodoItemSerializer(data=request.data)
+        # Ensure the author field is not included in the incoming data
+        data = request.data.copy()  # Make a copy of the request data
+        if 'author' in data:
+            del data['author']  # Remove the author field if present
+
+        serializer = TodoItemSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save(author=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print("Serializer errors:", serializer.errors)  # Debugging-Ausgabe
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
