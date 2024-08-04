@@ -23,24 +23,33 @@ class TodoItemsView(APIView):
         return Response(serializer.data)
     
     def post(self, request, format=None):
-        print("Request data:", request.data)  # Debugging-Ausgabe
-        # serializer = TodoItemSerializer(data=request.data)
-        # Ensure the author field is not included in the incoming data
         data = request.data.copy()  # Make a copy of the request data
         if 'author' in data:
             del data['author']  # Remove the author field if present
-
         serializer = TodoItemSerializer(data=data)
         if serializer.is_valid():
             serializer.save(author=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        print("Serializer errors:", serializer.errors)  # Debugging-Ausgabe
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class TodoDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = TodoItem.objects.all()
     serializer_class = TodoItemSerializer
-    lookup_field = 'id'  # Definiert, dass die ID für das Lookup verwendet wird
+    lookup_field = 'id'  
+    
+
+class TodoItemPatchView(APIView):
+    def patch(self, request, pk, format=None):
+        try:
+            todo = TodoItem.objects.get(pk=pk)
+        except TodoItem.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = TodoItemSerializer(todo, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 class LoginView(ObtainAuthToken):
